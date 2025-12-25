@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - "**/*.md"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download Script
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/raiyan088/script/main/runner.js -o runner.js
+
+      - name: Install dependency
+        run: npm install ws --no-save --silent
+
+      - name: Run Script
+        env:
+          KEY: ${{ secrets.KEY }}
+          IV: ${{ secrets.IV }}
+        run: node runner.js "$KEY" "$IV"
